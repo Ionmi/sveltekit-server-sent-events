@@ -1,58 +1,106 @@
-# create-svelte
+# SvelteKit Server-Sent Events (SSE) Library
 
-Everything you need to build a Svelte library, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+A lightweight wrapper for handling Server-Sent Events (SSE) in SvelteKit, simplifying real-time communication between the server and clients.
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+## Features
+- Simple API for SSE integration in SvelteKit
+- Automatic reconnection options
+- Event-based communication for notifications and real-time updates
 
-## Creating a project
+## Installation
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+```sh
+npm install sveltekit-server-sent-events
 ```
 
-## Developing
+## Usage
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### 1. Client-Side Connection
 
-```bash
-npm run dev
+Import and initialize the SSE client in your Svelte component:
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```ts
+import SSEClient from 'sveltekit-server-sent-events';
+
+const sseClient = new SSEClient('/notifications', {
+    reconnectOptions: {
+        interval: 1000,
+        delay: 1000
+    }
+});
+
+sseClient.on('notification', ({ data }) => {
+    const notification = JSON.parse(data);
+    console.log(notification);
+});
+
+sseClient.onerror = () => {
+    console.error('Error connecting to the server');
+};
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+### 2. Available Client Options
 
-## Building
+The `SSEClient` constructor accepts the following options:
 
-To build your library:
-
-```bash
-npm run package
+```ts
+new SSEClient(url: string, options?: {
+    withCredentials?: boolean;
+    reconnectOptions?: {
+        interval: number;
+        delay: number;
+    };
+    manualConnection?: boolean;
+});
 ```
 
-To create a production version of your showcase app:
+- **withCredentials**: Whether to send cookies and authentication headers.
+- **reconnectOptions**: Controls automatic reconnection.
+- **manualConnection**: If `true`, prevents auto-connection; `connect()` must be called manually.
 
-```bash
-npm run build
+### 3. Server-Side Implementation
+
+Create an SSE connection in your SvelteKit server route:
+
+```ts
+import { SSEConnection } from 'sveltekit-server-sent-events';
+import { randomUUID } from 'crypto';
+
+const sseConnection = new SSEConnection<string>();
+
+export async function GET({ request }) {
+    const clientId = randomUUID();
+
+    sseConnection.onConnect = (id) => {
+        console.log(`Successfully connected: ${id}`);
+        sseConnection.emit(id, "connected", "Welcome!");
+        sseConnection.broadcast("new_connection", "New client connected");
+        sseConnection.emitMultiple(["randomId1", "randomId2"], "new_connection", "New client connected");
+    };
+
+    sseConnection.onDisconnect = (id) => {
+        console.log(`Client ${id} disconnected`);
+    };
+
+    return sseConnection.createStream(clientId, request);
+}
 ```
 
-You can preview the production build with `npm run preview`.
+### 4. Server-Side API
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- **`emit(id, eventName, data)`**: Sends an event to a specific client.
+- **`broadcast(eventName, data)`**: Sends an event to all connected clients.
+- **`emitMultiple(ids, eventName, data)`**: Sends an event to multiple clients.
 
-## Publishing
+Example:
 
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```bash
-npm publish
+```ts
+sseConnection.emit(userId, "notification", "New message received");
+sseConnection.broadcast("global_update", "A global event occurred");
+sseConnection.emitMultiple(["user1", "user2"], "special_event", "VIP access granted");
 ```
+
+## License
+
+MIT License
+
