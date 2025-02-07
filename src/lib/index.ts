@@ -1,3 +1,5 @@
 // Reexport your entry components here
 
-export * from "./SvelteKitServerSentEvents/index.js";
+import { SSEManager, SSEClient, type ReconnectOptions } from "./SvelteKitServerSentEvents/index.js";
+
+export { SSEManager, SSEClient, type ReconnectOptions };
