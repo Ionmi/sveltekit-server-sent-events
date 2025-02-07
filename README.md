@@ -10,7 +10,7 @@ A lightweight wrapper for handling Server-Sent Events (SSE) in SvelteKit, simpli
 ## Installation
 
 ```sh
-npm install sveltekit-server-sent-events
+npm install svkit-server-sent-events
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ npm install sveltekit-server-sent-events
 Import and initialize the SSE client in your Svelte component:
 
 ```ts
-import SSEClient from 'sveltekit-server-sent-events';
+import SSEClient from 'svkit-server-sent-events';
 
 const sseClient = new SSEClient('/notifications', {
     reconnectOptions: {
@@ -63,7 +63,7 @@ new SSEClient(url: string, options?: {
 Create an SSE connection in your SvelteKit server route:
 
 ```ts
-import { SSEConnection } from 'sveltekit-server-sent-events';
+import { SSEConnection } from 'svkit-server-sent-events';
 import { randomUUID } from 'crypto';
 
 const sseConnection = new SSEConnection<string>();

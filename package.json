@@ -1,5 +1,5 @@
 {
-  "name": "sveltekit-server-sent-events",
+  "name": "svkit-server-sent-events",
   "license": "MIT",
   "author": "ionmi <ionmi.dev@gmail.com>",
   "description": "SvelteKit Server Sent Events simple library using Svelte 5",
